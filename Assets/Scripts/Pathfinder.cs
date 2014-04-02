@@ -50,11 +50,9 @@ public class Pathfinder : MonoBehaviour
 				for (int i=0; i<3; i++) {					
 						for (int j=0; j<3; j++) {
 								loopCount += 1;
-								if (loopCount % 2 == 1) //choose to NOT skip diagonal, but double moveWeight if hit diagonal. Initial call skip center.
+								if (loopCount % 2 == 1) /*Skip diagonal movement*/
 										continue;
 							
-								if (loopCount == 5)
-										continue;
 								//Debug.Log ("Floor " + ((current.getX () - 1 + i) + "," + (current.getY () - 1 + j) + " is " + walkable [(current.getY () - 1 + j)] [(current.getX () - 1 + i)]));
 					
 								if (walkable [(current.getY () - 1 + i)] [(current.getX () - 1 + j)] == 0) // Check if cell is walkable
@@ -96,20 +94,25 @@ public class Pathfinder : MonoBehaviour
 				int bestScore = 99999;
 				int bestIndex = -1;
 				int score = 0;
+				//Debug.Log ("openLists size is " + openLists.Count);
 				for (int i=0; i<openLists.Count; i++) {
+				//Debug.Log("Start Loop");
 						score = openLists [i].getG () + openLists [i].getH ();
 //Debug.Log ("Score of " + openLists [i].getX () + "," + openLists [i].getY () + " is " + score + ". Parent is " + openLists [i].getParent ().getX () + "," + openLists [i].getParent ().getY ());
 						if (score < bestScore) {
 								bestScore = score;
 								bestIndex = i;
+								//Debug.Log ("Score is " + bestScore + " with index " + bestIndex);
 						}					
 				}
-//Debug.Log ("openLists size is " + openLists.Count);
-			
+
+		if (openLists.Count == 0)
+		return;
 				// Step 2.1: After finding best score, add to closedLists, use as current and remove from openLists
+				//Debug.Log("This round we pick " + openLists[bestIndex].getX() + "," + openLists[bestIndex].getY());
 				closedLists.Add (openLists [bestIndex]);
 				current = openLists [bestIndex];
-				openLists.RemoveAt (bestIndex); 			
+				openLists.RemoveAt (bestIndex);
 			
 				
 		}
@@ -150,16 +153,18 @@ public class Pathfinder : MonoBehaviour
 										}
 
 										//if in closedLists, stop check and move to next coordinate.
-										if (closedLists [k].getX () == (current.getX () - 1 + j) && closedLists [k].getY () == (current.getY () - 1 + i)) 
-													inClosed=true;
-													break;
+										if (closedLists [k].getX () == (current.getX () - 1 + j) && closedLists [k].getY () == (current.getY () - 1 + i)) {
+											inClosed=true;
+											break;
+										}
 													
 								}
 								
 								if (inClosed)
-										continue;
+									continue;
 								
 								inOpen = false;
+								
 								//if not in closedLists, check if its in openLists
 								int breakloop2=0;
 								for (int c=0; c<openLists.Count; c++) {
@@ -170,20 +175,25 @@ public class Pathfinder : MonoBehaviour
 										else {
 												breakloop2++;
 										}
-										
-										// If in openlist, check if G in openLists is larger than G of current coordinate.
-										if (openLists [c].getG () > current.getG () + moveWeight * walkable [(current.getY () - 1 + i)] [(current.getX () - 1 + j)]){
-												openLists [c].setParent (new Square (// If true, then replace parent of current square in closed list with this square
-							                       current.getX () - 1 + j,
-							                       current.getY () - 1 + i,
-							                       (current.getG () + moveWeight * walkable [(current.getY () - 1 + i)] [(current.getX () - 1 + j)]),
-							                       heuristics,
-							                       current));	
-												inOpen=true;
-												break;
+					//Debug.Log("Check if " + openLists[c].getX () + "," + openLists[c].getY() + " is equal to " + (current.getX () - 1 + j) + "," + (current.getY () - 1 + i) );
+										if (openLists[c].getX () == (current.getX () - 1 + j) && openLists[c].getY() == (current.getY () - 1 + i)){
+												// If in openlist, check if G in openLists is larger than G of current coordinate.
+												
+												if (openLists [c].getG () > current.getG () + moveWeight * walkable [(current.getY () - 1 + i)] [(current.getX () - 1 + j)]){
+														openLists [c].setParent (new Square (// If true, then replace parent of current square in closed list with this square
+														                                     current.getX () - 1 + j,
+														                                     current.getY () - 1 + i,
+														                                     (current.getG () + moveWeight * walkable [(current.getY () - 1 + i)] [(current.getX () - 1 + j)]),
+														                                     heuristics,
+														                                     current));	
+														inOpen=true;
+														//Debug.Log("Break at inOpen");
+														break;
+												}
 										}
+										if (inOpen)
+											break;
 										//Debug.Log ("G of " + (current.getX () - 1 + i) + "," + (current.getY () - 1 + j) + " is " + (current.getG () + moveWeight*walkable [(current.getY () - 1 + j)] [(current.getX () - 1 + i)]));					
-										
 								}
 								
 								if (inOpen)
