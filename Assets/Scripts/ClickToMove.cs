@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class ClickToMove : MonoBehaviour
 {
-		private int maxmove;
+		public int maxmove;
 		public Color original;
 		public Color selected;
 		// Use this for initialization
@@ -28,5 +28,10 @@ public class ClickToMove : MonoBehaviour
 			{
 				renderer.material.color = original;
 			}
+		}
+		
+		public int getMaxMove()
+		{
+			return maxmove;
 		}
 }

@@ -19,11 +19,17 @@ bool isMoving;
 	
 	// Update is called once per frame
 	void Update () {
+	
 		if (Input.GetButton ("Fire1") && Time.time > nextFire) { // Nextfire intentionally to prevent multiple calls in one click
-				nextFire = Time.time + 1;
-		
+				nextFire = Time.time + 0.5f;
+					
 			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition); 
 			RaycastHit hit;
+			
+			if (isMoving){
+				Debug.Log("Wait until move finishes.");
+				return;
+			}		
 			
 			if(Physics.Raycast(ray,out hit,1000f)) //From camera, pick the frontmost object shown on screen, output object into hit
 			{	//using contitionals to determine what to do with this object we just hit with our click
@@ -32,15 +38,17 @@ bool isMoving;
 					selected=true;
 					ClickToMove ctm = (ClickToMove)hold.GetComponent("ClickToMove");
 					ctm.changeColor(selected);
+					Pathfinder.highlightMoveable(floorWeight, hold.transform.position, ctm.getMaxMove());
 				}
-				else if (hit.transform.tag=="Units" && selected==true){
+				else if (hit.transform.tag=="Units" && selected==true){ //action should change, part of next stage
 					selected=false;
 					ClickToMove ctm = (ClickToMove)hold.GetComponent("ClickToMove");
 					ctm.changeColor(selected);
 					hold = null;
+					Pathfinder.colourMoveable(selected);
 				}
-				else if (hit.transform.tag=="Floor" && selected==true){
-					
+				else if (hit.transform.tag=="Floor" && selected==true && hit.transform.gameObject.renderer.material.color == Color.cyan){
+					Pathfinder.colourMoveable(false);
 					if (isMoving){
 						Debug.Log("Wait until move finishes.");
 						return;
@@ -60,6 +68,13 @@ bool isMoving;
 					} else {
 						Debug.Log("This spot is unreachable");
 					}
+				}
+				else {
+					selected=false;
+					ClickToMove ctm = (ClickToMove)hold.GetComponent("ClickToMove");
+					ctm.changeColor(selected);
+					hold = null;
+					Pathfinder.colourMoveable(selected);
 				}
 			}
 		}
